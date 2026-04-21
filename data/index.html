@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>ESP32 GPS Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <h1>GPS Tracker</h1>
+        <button id="centerBtn" class="btn">Center map</button>
+      </header>
+
+      <section class="status-grid">
+        <article class="card">
+          <span class="label">Signal</span>
+          <span id="signalValue" class="value">--%</span>
+        </article>
+        <article class="card">
+          <span class="label">Satellites</span>
+          <span id="satValue" class="value">--</span>
+        </article>
+        <article class="card">
+          <span class="label">Speed</span>
+          <span id="speedValue" class="value">-- km/h</span>
+        </article>
+        <article class="card">
+          <span class="label">Battery</span>
+          <span id="batteryValue" class="value">-- V</span>
+        </article>
+      </section>
+
+      <section class="map-wrapper">
+        <div id="map"></div>
+        <div id="gpsState" class="gps-state">Waiting for GPS data...</div>
+      </section>
+
+      <footer class="footer">
+        <span id="updatedValue">Last updated: --</span>
+      </footer>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
