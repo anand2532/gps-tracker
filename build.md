@@ -119,6 +119,8 @@ The firmware currently uses simulated GPS values centered around Delhi (Connaugh
 - Map initial center is Delhi (same as firmware dummy origin).
 - Marker updates every ~1-2 seconds from `/api/gps`.
 - `Center map` button flies to the current marker position.
+- Leaflet assets are served locally from `/vendor/leaflet/` (no internet required).
+- Offline tiles are served from `/tiles/{z}/{x}/{y}.png` for a small Delhi area.
 
 ### Required Deploy Sequence For Web Changes
 
@@ -131,6 +133,27 @@ pio run -t uploadfs
 ```
 
 If HTML/CSS/JS changes are not visible on phone/browser, re-run `pio run -t uploadfs`.
+
+### Offline Delhi Map (AP-Only Mode)
+
+This project now supports offline map operation in AP mode:
+
+- Local Leaflet files:
+  - `data/vendor/leaflet/leaflet.js`
+  - `data/vendor/leaflet/leaflet.css`
+- Local offline tile pack:
+  - `data/tiles/12/...`
+  - `data/tiles/13/...`
+  - `data/tiles/14/...`
+
+To deploy offline map updates, always upload filesystem after changes:
+
+```bash
+pio run -t buildfs
+pio run -t uploadfs
+```
+
+If you expand tile coverage and `buildfs` fails due to size, reduce tile count or zoom range.
 
 ## Troubleshooting
 

@@ -79,6 +79,11 @@ void WebServerManager::registerStaticRoutes() {
     sendFileOrFallback(request, "/app.js", "application/javascript; charset=utf-8");
   });
 
+  server_.serveStatic("/vendor/", LittleFS, "/vendor/")
+      .setCacheControl("public, max-age=604800, immutable");
+  server_.serveStatic("/tiles/", LittleFS, "/tiles/")
+      .setCacheControl("public, max-age=604800, immutable");
+
   // Reduce noisy "favicon missing" file lookups in logs.
   server_.on("/favicon.ico", HTTP_GET,
              [](AsyncWebServerRequest* request) { request->send(204); });

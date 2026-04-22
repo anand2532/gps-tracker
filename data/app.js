@@ -34,9 +34,17 @@ function initMapIfAvailable() {
     attributionControl: true,
   }).setView([DELHI_LAT, DELHI_LON], 13);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors",
+  const delhiBounds = L.latLngBounds(
+    [28.45, 77.05],  // southwest
+    [28.78, 77.36],  // northeast
+  );
+  map.setMaxBounds(delhiBounds);
+
+  L.tileLayer("/tiles/{z}/{x}/{y}.png", {
+    minZoom: 12,
+    maxZoom: 14,
+    attribution: "Offline Delhi tile pack",
+    noWrap: true,
   }).addTo(map);
 
   marker = L.marker([DELHI_LAT, DELHI_LON], { title: "Device location" }).addTo(map);
