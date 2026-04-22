@@ -19,4 +19,6 @@ class WebServerManager {
   void registerApiRoutes();
   void registerStaticRoutes();
   void redirectToPortal(AsyncWebServerRequest* request);
+  void sendFileOrFallback(AsyncWebServerRequest* request, const char* path,
+                          const char* content_type);
 };

@@ -63,7 +63,25 @@ void WebServerManager::registerCaptivePortalRoutes() {
 }
 
 void WebServerManager::registerStaticRoutes() {
-  server_.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+  server_.on("/", HTTP_GET, [this](AsyncWebServerRequest* request) {
+    sendFileOrFallback(request, "/index.html", "text/html; charset=utf-8");
+  });
+
+  server_.on("/index.html", HTTP_GET, [this](AsyncWebServerRequest* request) {
+    sendFileOrFallback(request, "/index.html", "text/html; charset=utf-8");
+  });
+
+  server_.on("/style.css", HTTP_GET, [this](AsyncWebServerRequest* request) {
+    sendFileOrFallback(request, "/style.css", "text/css; charset=utf-8");
+  });
+
+  server_.on("/app.js", HTTP_GET, [this](AsyncWebServerRequest* request) {
+    sendFileOrFallback(request, "/app.js", "application/javascript; charset=utf-8");
+  });
+
+  // Reduce noisy "favicon missing" file lookups in logs.
+  server_.on("/favicon.ico", HTTP_GET,
+             [](AsyncWebServerRequest* request) { request->send(204); });
 }
 
 void WebServerManager::redirectToPortal(AsyncWebServerRequest* request) {
@@ -72,4 +90,26 @@ void WebServerManager::redirectToPortal(AsyncWebServerRequest* request) {
   response->addHeader("Location", location);
   response->addHeader("Cache-Control", "no-store");
   request->send(response);
+}
+
+void WebServerManager::sendFileOrFallback(AsyncWebServerRequest* request,
+                                          const char* path,
+                                          const char* content_type) {
+  if (LittleFS.exists(path)) {
+    AsyncWebServerResponse* response = request->beginResponse(LittleFS, path, content_type);
+    response->addHeader("Cache-Control", "no-store, max-age=0");
+    request->send(response);
+    return;
+  }
+
+  logger::error("LittleFS asset missing; upload filesystem with pio run -t uploadfs");
+  const char* html =
+      "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' "
+      "content='width=device-width,initial-scale=1'><title>Asset Missing</title></head>"
+      "<body style='font-family:Arial;padding:16px;background:#111;color:#eee'>"
+      "<h2>Web assets missing on device</h2>"
+      "<p>Run:<br><code>pio run -t uploadfs</code></p>"
+      "<p>Then reload <code>http://192.168.4.1/</code>.</p>"
+      "</body></html>";
+  request->send(500, "text/html; charset=utf-8", html);
 }
