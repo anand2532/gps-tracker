@@ -8,7 +8,7 @@
 
 namespace {
 constexpr const char* kApSsid = "GPS-Tracker-ESP32";
-constexpr const char* kApPassword = "gpstracker123";
+constexpr const char* kApPassword = "123456789";
 
 WifiManager wifiManager;
 GpsManager gpsManager;
