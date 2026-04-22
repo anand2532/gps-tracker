@@ -2,19 +2,6 @@
 const DELHI_LAT = 28.6139;
 const DELHI_LON = 77.209;
 
-const map = L.map("map", {
-  zoomControl: true,
-  attributionControl: true,
-}).setView([DELHI_LAT, DELHI_LON], 13);
-
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
-  attribution: "&copy; OpenStreetMap contributors",
-}).addTo(map);
-
-const marker = L.marker([DELHI_LAT, DELHI_LON], { title: "Device location" }).addTo(map);
-const pathLine = L.polyline([], { color: "#55a6ff", weight: 3, opacity: 0.7 }).addTo(map);
-
 const signalValue = document.getElementById("signalValue");
 const satValue = document.getElementById("satValue");
 const speedValue = document.getElementById("speedValue");
@@ -22,10 +9,44 @@ const batteryValue = document.getElementById("batteryValue");
 const updatedValue = document.getElementById("updatedValue");
 const gpsState = document.getElementById("gpsState");
 const centerBtn = document.getElementById("centerBtn");
+const mapContainer = document.getElementById("map");
 
-let lastCoords = marker.getLatLng();
+let map = null;
+let marker = null;
+let pathLine = null;
+let lastCoords = { lat: DELHI_LAT, lng: DELHI_LON };
+let latestFix = { lat: DELHI_LAT, lon: DELHI_LON };
+let mapAvailable = false;
+
+function initMapIfAvailable() {
+  if (typeof window.L === "undefined") {
+    mapContainer.innerHTML =
+      "<div style='padding:14px;color:#9ba7be'>Map unavailable in offline AP mode. GPS data is still live below.</div>";
+    centerBtn.textContent = "Center unavailable";
+    centerBtn.disabled = true;
+    centerBtn.style.opacity = "0.55";
+    centerBtn.style.cursor = "not-allowed";
+    return false;
+  }
+
+  map = L.map("map", {
+    zoomControl: true,
+    attributionControl: true,
+  }).setView([DELHI_LAT, DELHI_LON], 13);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+
+  marker = L.marker([DELHI_LAT, DELHI_LON], { title: "Device location" }).addTo(map);
+  pathLine = L.polyline([], { color: "#55a6ff", weight: 3, opacity: 0.7 }).addTo(map);
+  lastCoords = marker.getLatLng();
+  return true;
+}
 
 function animateMarker(nextCoords) {
+  if (!marker) return;
   const start = performance.now();
   const from = { lat: lastCoords.lat, lon: lastCoords.lng };
   const duration = 700;
@@ -71,8 +92,11 @@ async function refreshGps() {
 
     if (Number.isFinite(data.lat) && Number.isFinite(data.lon) && fixOk) {
       const next = { lat: data.lat, lon: data.lon };
+      latestFix = next;
       animateMarker(next);
-      pathLine.addLatLng([next.lat, next.lon]);
+      if (pathLine) {
+        pathLine.addLatLng([next.lat, next.lon]);
+      }
     }
   } catch (error) {
     gpsState.classList.remove("ok");
@@ -82,12 +106,16 @@ async function refreshGps() {
 }
 
 centerBtn.addEventListener("click", () => {
-  const pos = marker.getLatLng();
+  if (!mapAvailable) {
+    return;
+  }
+  const pos = marker ? marker.getLatLng() : { lat: latestFix.lat, lng: latestFix.lon };
   map.flyTo([pos.lat, pos.lng], Math.max(map.getZoom(), 15), {
     duration: 0.6,
     animate: true,
   });
 });
 
+mapAvailable = initMapIfAvailable();
 refreshGps();
 setInterval(refreshGps, 1500);
