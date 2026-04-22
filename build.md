@@ -96,6 +96,42 @@ dmesg | rg -i "tty|usb|cp210|ch340|ftdi"
 3. Flash: `pio run -t upload`
 4. Monitor logs: `pio device monitor -b 115200`
 
+## Current Firmware Behavior (AP Web Dashboard)
+
+The current firmware serves a full web dashboard directly from the ESP32:
+
+- ESP32 runs in Access Point mode.
+- Captive-portal style redirects are enabled for common probe endpoints.
+- Frontend assets are served from LittleFS.
+- `/api/gps` returns live dummy telemetry for the map and status cards.
+
+### Dummy GPS Data (Delhi)
+
+The firmware currently uses simulated GPS values centered around Delhi (Connaught Place area):
+
+- Latitude anchor: `28.6139`
+- Longitude anchor: `77.2090`
+- `valid` is always true in dummy mode so data appears immediately.
+- Speed, satellites, signal, and battery are simulated with non-blocking updates.
+
+### Web Map Notes
+
+- Map initial center is Delhi (same as firmware dummy origin).
+- Marker updates every ~1-2 seconds from `/api/gps`.
+- `Center map` button flies to the current marker position.
+
+### Required Deploy Sequence For Web Changes
+
+When firmware or frontend changes are made, use:
+
+```bash
+pio run
+pio run -t upload
+pio run -t uploadfs
+```
+
+If HTML/CSS/JS changes are not visible on phone/browser, re-run `pio run -t uploadfs`.
+
 ## Troubleshooting
 
 - **Permission denied on serial port**: add your user to `dialout`, then re-login.
